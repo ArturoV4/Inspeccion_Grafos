@@ -2,10 +2,10 @@ import time
 import threading
 import sys
 
-class Semaforo(object):
+class Semaphore:
     def __init__(self, inicial):
         self.lock = threading.Condition(threading.Lock())  # Variable de condición
-        self.valor = inicial  # Valor inicial va a ser n-1 (en este caso 4) para que no se produzca el interbloqueo.
+        self.valor = inicial  # Valor inicial va a ser n-1 para que no se produzca el interbloqueo.
 
     def up(self):
         with self.lock:
@@ -14,11 +14,11 @@ class Semaforo(object):
 
     def down(self):
         with self.lock:
-            while self.valor == 0:  # Evita que la cuenta disminuya a -1 para que no se produzca el interbloqueo.
+            while self.valor == 0:  # Condición en 0 para que no se produzca el interbloqueo.
                 self.lock.wait()  # Bloquea el hilo hasta que up lo despierte.
             self.valor -=1  # Disminuye el valor en 1.
 
-class Sillas(object):
+class Sillas:
     def __init__(self, id):
         self.id = id
         self.lock = threading.Condition(threading.Lock())
@@ -62,11 +62,11 @@ class Trabajador (threading.Thread):
             self.silla_ady.dejar(self.id)  # Deja la silla adyacente.
             self.silla.dejar(self.id)  # Deja su suya.
             self.control.up()  # Llama al método up (representa a los trabajadores que ya terminaron de descansar).
-        sys.stdout.write("Trabajador [%s] termina de descansar" % self.id)  # Presenta el mensaje que terminaron de descansar.
+        sys.stdout.write("Trabajador [%s] termina de descansar\n" % self.id)  # Presenta el mensaje que terminaron de descansar.
 
 def main():
     n = 5  # Número de trabajadores en base al problema.
-    control = Semaforo(n-1)  # Si fuera (n) se produce el interbloqueo porque cada trabajador tomaría 1 silla.
+    control = Semaphore(n-1)  # Si fuera (n) se produce el interbloqueo porque cada trabajador tomaría 1 silla.
     s = [Sillas(i) for i in range(n)]  # Lista de sillas.
     t = [Trabajador(i, s[i], s[(i+1) % n], control) for i in range(n)]  # Lista de trabajadores.
     for i in range(n):
